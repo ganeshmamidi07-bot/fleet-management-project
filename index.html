@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fleetline – Fleet management software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0F2; --surface:#FFFFFF; --ink:#1E2430; --muted:#5D6675; --line:#DDE1E6;
+  --blue:#1F5FAD; --blue-ink:#FFFFFF; --green:#3FA45B; --yellow:#EDB02A; --red:#D64545; --teal:#2FA89A; --purple:#7D79B8;
+  --sky:#CFE6F5; --hill1:#8CCB6A; --hill2:#6DB556; --mount:#8DB5C9; --road:#4A4F58;
+  --van:#F6F7F9; --van-shade:#D9DDE3; --van-line:#B7BDC6; --glass:#8FA3B5;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161C; --surface:#1B212A; --ink:#E8ECF1; --muted:#9AA4B2; --line:#2B333E;
+    --blue:#5B9BE6; --blue-ink:#0E1620; --green:#58BD74; --yellow:#F2C14E; --red:#EC6A6A; --teal:#47C1B3; --purple:#9D99D6;
+    --sky:#1E3345; --hill1:#2F6B3E; --hill2:#255733; --mount:#33546A; --road:#2A2E35;
+    --van:#E4E7EC; --van-shade:#C3C8D0; --van-line:#8D95A1;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161C; --surface:#1B212A; --ink:#E8ECF1; --muted:#9AA4B2; --line:#2B333E;
+  --blue:#5B9BE6; --blue-ink:#0E1620; --green:#58BD74; --yellow:#F2C14E; --red:#EC6A6A; --teal:#47C1B3; --purple:#9D99D6;
+  --sky:#1E3345; --hill1:#2F6B3E; --hill2:#255733; --mount:#33546A; --road:#2A2E35;
+  --van:#E4E7EC; --van-shade:#C3C8D0; --van-line:#8D95A1;
+}
+html{scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2,h3{line-height:1.1;margin:0;letter-spacing:-.02em}
+h1{font-size:clamp(40px,6.4vw,72px);font-weight:800}
+h2{font-size:clamp(28px,3.6vw,42px);font-weight:700}
+h3{font-size:19px;font-weight:700;letter-spacing:-.01em}
+p{margin:0}
+.lead{font-size:clamp(18px,2vw,21px);color:var(--muted);max-width:56ch}
+
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;text-decoration:none;letter-spacing:-.03em}
+nav.main{display:flex;gap:26px}
+nav.main a{text-decoration:none;color:var(--muted);font-weight:600;font-size:15px}
+nav.main a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;background:var(--blue);color:var(--blue-ink);font:inherit;font-weight:700;font-size:16px;padding:12px 22px;cursor:pointer;text-decoration:none;transition:filter .15s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--muted);filter:none}
+.btn.sm{padding:9px 16px;font-size:14px}
+@media(max-width:760px){nav.main{display:none}}
+
+/* hero */
+.hero{padding:64px 0 0;text-align:center}
+.hero h1{max-width:14ch;margin:0 auto}
+.hero .lead{margin:22px auto 30px}
+.hero .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.scene{margin-top:44px;line-height:0}
+.scene svg{width:100%;height:auto;display:block}
+.dash-line{animation:dash .9s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-70}}
+.bob{animation:bob .9s ease-in-out infinite;transform-box:fill-box}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+.spin{animation:spin .7s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.dash-line,.bob,.spin{animation:none}}
+
+/* sections */
+section{padding:96px 0}
+section.alt{background:var(--surface)}
+.split{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center}
+.split.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.split.flip .copy{order:2}
+.copy h2{margin-bottom:18px}
+.copy .lead{font-size:18px}
+@media(max-width:860px){.split,.split.flip{grid-template-columns:1fr;gap:32px}.split.flip .copy{order:0}section{padding:64px 0}}
+.head{max-width:680px;margin-bottom:40px}
+.head h2{margin-bottom:14px}
+
+/* vehicle types */
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
+.type{background:var(--bg);border-radius:14px;padding:22px 16px 18px;text-align:center;font-weight:600}
+.type svg{width:100%;height:auto;margin-bottom:10px}
+@media(max-width:700px){.types{grid-template-columns:repeat(2,1fr)}}
+
+/* app window */
+.win{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -22px rgba(20,30,50,.35);overflow:hidden}
+.win .bar{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.win .bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dash-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.dash-top h3{font-size:24px}
+select{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;min-width:170px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.card h4{margin:0 0 10px;font-size:14.5px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline}
+.card h4 a{font-size:12px;color:var(--blue);font-weight:600;text-decoration:none}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c5{grid-column:span 5}.c7{grid-column:span 7}.c8{grid-column:span 8}
+@media(min-width:981px){.tall{grid-row:span 2;display:flex;flex-direction:column;justify-content:center}.tall h4{margin-bottom:14px}}
+@media(max-width:980px){.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}}
+@media(max-width:620px){.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 12}}
+.rows div{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px}
+.rows div:first-child{border-top:0}
+.pill{min-width:30px;text-align:center;font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:2px 9px}
+.p-g{background:var(--green)}.p-b{background:var(--blue)}.p-y{background:var(--yellow);color:#2a2100}.p-r{background:var(--red)}
+.pair{display:flex;justify-content:space-around;text-align:center;padding:14px 0 6px}
+.pair b{display:block;font-size:44px;line-height:1;font-weight:600}
+.pair span{font-size:14px;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block}
+.ax{font-size:10px;fill:var(--muted);font-family:inherit}
+.grid-l{stroke:var(--line);stroke-width:1}
+.f-blue{fill:var(--blue)}.f-green{fill:var(--green)}.f-yellow{fill:var(--yellow)}.f-red{fill:var(--red)}.f-teal{fill:var(--teal)}.f-purple{fill:var(--purple)}.f-gray{fill:#9aa4b2}
+.s-teal{stroke:var(--teal);fill:none;stroke-width:2}.s-yellow{stroke:var(--yellow);fill:none;stroke-width:2}.s-gray{stroke:#9aa4b2;fill:none;stroke-width:2}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);justify-content:center;margin-top:6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+
+/* alerts */
+.alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 0}
+.alert{background:var(--bg);border:2px solid transparent;border-radius:12px;padding:18px 12px;text-align:center;font:inherit;color:var(--ink);cursor:pointer}
+.alert[aria-pressed="true"]{border-color:var(--blue);background:var(--surface)}
+.alert svg{width:34px;height:34px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:6px}
+.alert b{display:block;font-size:15px}
+.alert-note{margin-top:14px;background:var(--bg);border-radius:12px;padding:16px 18px;font-size:15.5px;min-height:92px}
+.list-row{display:grid;grid-template-columns:1.1fr 1.8fr 1fr;gap:12px;padding:12px 18px;border-top:1px solid var(--line);font-size:14px;align-items:center;cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font-family:inherit;color:inherit}
+.list-row:hover{background:var(--bg)}
+.list-row[aria-pressed="true"]{background:color-mix(in srgb,var(--blue) 12%,var(--surface))}
+.list-row small{display:block;color:var(--muted);font-size:12px}
+.list-head{display:flex;justify-content:space-between;padding:14px 18px;font-weight:700}
+@media(max-width:560px){.list-row{grid-template-columns:1fr}}
+
+/* work order form */
+.form{padding:20px 22px}
+.form-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px}
+.form-top h3{font-size:20px}
+.field{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:center;margin-bottom:12px}
+.field label{text-align:right;font-size:13.5px;font-weight:600}
+.field input,.field select{width:100%;font:inherit;font-size:14.5px;padding:9px 11px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);min-width:0}
+.field .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.req{color:var(--red)}
+@media(max-width:560px){.field{grid-template-columns:1fr;gap:4px}.field label{text-align:left}}
+.cancel{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;cursor:pointer;padding:8px}
+
+/* line item */
+.line{padding:20px 22px}
+.line .shop{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.line .shop .logo{width:40px;height:40px;border-radius:8px;background:var(--blue);display:grid;place-items:center;color:#fff;font-weight:800}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 24px;margin:0 0 18px;font-size:14.5px}
+dl.kv dt{font-weight:700}dl.kv dd{margin:0;color:var(--muted)}
+.line-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.round{width:42px;height:42px;border-radius:50%;border:2px solid;background:none;cursor:pointer;display:inline-grid;place-items:center;font-size:20px;line-height:1}
+.round.no{color:var(--red);border-color:var(--red)}.round.no:hover,.round.no[aria-pressed="true"]{background:var(--red);color:#fff}
+.round.yes{color:var(--green);border-color:var(--green)}.round.yes:hover,.round.yes[aria-pressed="true"]{background:var(--green);color:#fff}
+.status-chip{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--bg)}
+
+/* cost */
+.donut-wrap{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center}
+@media(max-width:560px){.donut-wrap{grid-template-columns:1fr}}
+.total{text-align:center;margin-top:10px}
+.total b{display:block;font-size:34px;color:var(--blue);font-weight:700}
+.total span{font-size:13.5px;color:var(--muted)}
+.stat-row{display:flex;gap:28px;flex-wrap:wrap;margin-top:26px}
+.stat b{display:block;font-size:30px;color:var(--blue);font-weight:700;line-height:1.1}
+.stat span{font-size:14px;color:var(--muted)}
+
+/* replacement */
+.slider-row{display:flex;align-items:center;gap:16px;padding:6px 4px 0}
+.slider-row label{font-weight:600;font-size:14.5px;white-space:nowrap}
+input[type=range]{flex:1;accent-color:var(--blue);min-width:0}
+.readout{display:flex;gap:28px;flex-wrap:wrap;margin:6px 4px 14px}
+.readout b{font-size:28px;display:block;line-height:1.1}
+.readout span{font-size:13.5px;color:var(--muted)}
+.curve-line{fill:none;stroke:var(--teal);stroke-width:3}
+.curve-area{fill:var(--teal);opacity:.16}
+
+/* teams */
+.teams{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.team{background:var(--bg);border-radius:14px;padding:26px 24px}
+.team h3{margin-bottom:10px}
+.team p{color:var(--muted);font-size:16px}
+@media(max-width:860px){.teams{grid-template-columns:1fr}}
+
+/* cta */
+.cta{text-align:center;padding:96px 0 110px}
+.cta h2{margin-bottom:14px}
+.cta .lead{margin:0 auto 28px}
+.signup{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.signup input{font:inherit;font-size:16px;padding:12px 16px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:280px;max-width:100%}
+.msg{margin-top:14px;min-height:24px;font-weight:600}
+footer{border-top:1px solid var(--line);padding:26px 0;font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Fleetline home">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="var(--blue)"/><path d="M6 21h22" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18v-5h10v5M18 14h5l3 4v3H8v-3" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="23" r="2.2" fill="var(--green)" stroke="#fff" stroke-width="1.2"/><circle cx="23" cy="23" r="2.2" fill="var(--green)" stroke="#fff" stroke-width="1.2"/></svg>
+      Fleetline
+    </a>
+    <nav class="main" aria-label="Sections">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#issues">Issues</a>
+      <a href="#work-orders">Work orders</a>
+      <a href="#costs">Costs</a>
+      <a href="#replace">Replacement</a>
+    </nav>
+    <a class="btn sm" href="#start">Try it free</a>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <h1>Keep every vehicle on the road.</h1>
+    <p class="lead">Fleetline tracks maintenance, inspections, fuel and costs for every vehicle you run, from one dashboard that technicians, drivers and managers all use.</p>
+    <div class="actions">
+      <a class="btn" href="#start">Try it free</a>
+      <a class="btn ghost" href="#dashboard">See the dashboard</a>
+    </div>
+  </div>
+  <div class="scene" id="scene" aria-hidden="true"></div>
+</div>
+
+<!-- VEHICLE TYPES -->
+<section class="alt" id="fleet">
+  <div class="wrap">
+    <div class="head">
+      <h2>Vans, trucks, buses and everything between.</h2>
+      <p class="lead">Add any vehicle or piece of equipment, track it by miles, kilometres or hours, and keep its history in one place instead of a pile of paper.</p>
+    </div>
+    <div class="types" id="types"></div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+  <div class="wrap">
+    <div class="head">
+      <h2>Your whole fleet, on one screen.</h2>
+      <p class="lead">Open work orders, vehicle status, meter readings, costs and inspections update as your team works. Switch groups to focus on one part of the fleet.</p>
+    </div>
+    <div class="win" style="padding:20px">
+      <div class="dash-top">
+        <h3>My Dashboard</h3>
+        <label class="sr" style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)">Group
+          <select id="group"><option value="all">All Groups</option><option value="delivery">Delivery vans</option><option value="field">Field service</option></select>
+        </label>
+      </div>
+      <div class="grid">
+        <div class="card c3"><h4>Active Work Orders <a href="#work-orders">Details</a></h4>
+          <div class="rows"><div>Inbox <span class="pill p-g" id="wo0"></span></div><div>In Progress <span class="pill p-b" id="wo1"></span></div><div>Waiting for Parts <span class="pill p-y" id="wo2"></span></div></div></div>
+        <div class="card c3"><h4>Cost Per Meter <a href="#costs">Details</a></h4><svg class="chart" id="cpm"></svg>
+          <div class="legend"><span><i style="background:var(--teal)"></i>Cost/mi</span><span><i style="background:var(--yellow)"></i>Cost/km</span><span><i style="background:#9aa4b2"></i>Cost/hr</span></div></div>
+        <div class="card c6 tall"><h4>Latest Meter Readings</h4><svg class="chart" id="scatter"></svg>
+          <div class="legend"><span><i style="background:var(--teal)"></i>Miles</span><span><i style="background:var(--yellow)"></i>Kilometres</span><span><i style="background:var(--purple)"></i>Hours</span></div></div>
+        <div class="card c3"><h4>Vehicle Assignments</h4><div class="pair"><div><b style="color:var(--green)" id="asg"></b><span>Assigned</span></div><div><b style="color:var(--red)" id="uasg"></b><span>Unassigned</span></div></div></div>
+        <div class="card c3"><h4>Vehicle Status <a href="#fleet">Details</a></h4>
+          <div class="rows"><div>Active <span class="pill p-g" id="vs0"></span></div><div>Out of Service <span class="pill p-r" id="vs1"></span></div><div>Inactive <span class="pill p-b" id="vs2"></span></div><div>In Shop <span class="pill p-y" id="vs3"></span></div></div></div>
+        <div class="card c3"><h4>Total Costs <a href="#costs">Details</a></h4><svg class="chart" id="tc"></svg></div>
+        <div class="card c3"><h4>Fuel Costs <a href="#costs">Details</a></h4><svg class="chart" id="fc"></svg></div>
+        <div class="card c3"><h4>Open Issues</h4><div class="pair"><div><b style="color:var(--yellow)" id="oi"></b><span>Open</span></div><div><b style="color:var(--red)" id="ov"></b><span>Overdue</span></div></div></div>
+        <div class="card c3"><h4>Inspections Summary <a href="#issues">Details</a></h4><svg class="chart" id="pie" style="max-width:150px;margin:0 auto"></svg><div class="legend"><span id="pie-l">Last 30 days</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ISSUES -->
+<section class="alt" id="issues">
+  <div class="wrap">
+    <div class="split">
+      <div class="copy">
+        <h2>Catch problems before they stop a vehicle.</h2>
+        <p class="lead">Recalls, driver inspection defects and engine fault codes land in one issue list, so nothing waits in someone's inbox.</p>
+        <div class="alerts" role="group" aria-label="Alert types">
+          <button class="alert" aria-pressed="true" data-k="recall"><svg viewBox="0 0 32 32"><path d="M20 6a6 6 0 0 0-7 8L5 22a2.8 2.8 0 0 0 4 4l8-8a6 6 0 0 0 8-7l-4 4-3-1-1-3z"/></svg><b>Recalls</b></button>
+          <button class="alert" aria-pressed="false" data-k="dvir"><svg viewBox="0 0 32 32"><rect x="7" y="5" width="18" height="22" rx="2"/><path d="M12 5v-2h8v2M12 13h8M12 18h8M12 23h4"/></svg><b>DVIR Defects</b></button>
+          <button class="alert" aria-pressed="false" data-k="dtc"><svg viewBox="0 0 32 32"><path d="M16 4 29 27H3z"/><path d="M16 13v7M16 23.5v.5"/></svg><b>DTC Alerts</b></button>
+        </div>
+        <div class="alert-note" id="alert-note" aria-live="polite"></div>
+      </div>
+      <div class="win">
+        <div class="list-head"><span>Issue List</span><span class="status-chip" id="issue-count">5 open</span></div>
+        <div id="issue-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK ORDERS -->
+<section id="work-orders">
+  <div class="wrap">
+    <div class="head">
+      <h2>Turn an issue into a work order in seconds.</h2>
+      <p class="lead">Log the problem, set a status and start date, then let the shop add line items. You approve or reject each one before any money is spent.</p>
+    </div>
+    <div class="split flip" style="align-items:start">
+      <div class="win form">
+        <div class="form-top"><h3>Work Order Details</h3>
+          <div><button class="cancel" id="wo-cancel" type="button">Cancel</button> <button class="btn sm" id="wo-save" type="button">Save Work Order</button></div></div>
+        <div class="field"><label for="f-veh">Vehicle <span class="req">*</span></label><input id="f-veh" value="Transit Van"></div>
+        <div class="field"><label for="f-desc">Issue Description <span class="req">*</span></label><input id="f-desc" value="Nail in front tire"></div>
+        <div class="field"><label for="f-status">Status <span class="req">*</span></label><select id="f-status"><option>Open</option><option selected>In-progress</option><option>Waiting for parts</option><option>Completed</option></select></div>
+        <div class="field"><label for="f-idate">Issue Date <span class="req">*</span></label><div class="two"><input id="f-idate" type="date" value="2026-06-23"><input type="time" value="11:03" aria-label="Issue time"></div></div>
+        <div class="field"><label for="f-sdate">Start Date <span class="req">*</span></label><div class="two"><input id="f-sdate" type="date" value="2026-06-24"><input type="time" value="13:30" aria-label="Start time"></div></div>
+        <div class="field"><label for="f-odo">Start Odometer <span class="req">*</span></label><input id="f-odo" value="144,987" aria-describedby="odo-h"></div>
+        <div class="field"><label for="f-cdate">Completion Date</label><div class="two"><input id="f-cdate" type="date"><input type="time" aria-label="Completion time"></div></div>
+      </div>
+      <div class="win line">
+        <div class="shop"><div class="logo" aria-hidden="true">AC</div><div><b>Autocare Center</b><div style="font-size:13.5px;color:var(--muted)">Service shop · 2.4 mi away</div></div></div>
+        <h3 style="margin-bottom:12px">Line Item</h3>
+        <dl class="kv"><dt>Part</dt><dd>Brake Pad</dd><dt>Service Code</dt><dd>Brake &amp; Traction</dd><dt>Part Name</dt><dd>Brake Pad Front</dd><dt>Cause</dt><dd>Wear &amp; Tear</dd><dt>Authorization</dt><dd><span class="status-chip" id="auth">Requires Approval</span></dd></dl>
+        <div class="line-foot">
+          <div><div style="font-size:13.5px;color:var(--muted)">Unit cost × 1</div><b style="font-size:22px">$159.99</b></div>
+          <div style="display:flex;gap:10px"><button class="round no" id="rej" aria-label="Reject line item" aria-pressed="false">✕</button><button class="round yes" id="app" aria-label="Approve line item" aria-pressed="false">✓</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COSTS -->
+<section class="alt" id="costs">
+  <div class="wrap">
+    <div class="head">
+      <h2>See where every dollar goes.</h2>
+      <p class="lead">Parts, labour and fuel are tracked on each vehicle and rolled up across the fleet, so you can spot the vehicles that cost too much to run.</p>
+    </div>
+    <div class="win" style="padding:22px">
+      <div class="grid">
+        <div class="c5" style="min-width:0">
+          <div class="donut-wrap"><svg class="chart" id="donut"></svg>
+            <div class="legend" style="flex-direction:column;align-items:flex-start;gap:8px;justify-content:flex-start">
+              <span><i style="background:var(--green)"></i>Fuel cost (3.1%)</span><span><i style="background:#8a97a6"></i>Other cost (29.6%)</span><span><i style="background:var(--yellow)"></i>Service cost (67.3%)</span></div></div>
+          <div class="total"><span>Total cost</span><b>$10,949.60</b></div>
+        </div>
+        <div class="c7" style="min-width:0"><h4 style="margin:0 0 6px;font-size:14.5px">Cost per meter</h4><svg class="chart" id="cost-line"></svg>
+          <div class="legend"><span><i style="background:var(--teal)"></i>Cost/mi</span></div></div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><b>$421.89</b><span>Parts on this work order</span></div>
+      <div class="stat"><b>$95.78</b><span>Labour</span></div>
+      <div class="stat"><b>$517.67</b><span>Total, front tire replacement</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- REPLACEMENT -->
+<section id="replace">
+  <div class="wrap">
+    <div class="split">
+      <div class="copy">
+        <h2>Know when a vehicle costs more than it's worth.</h2>
+        <p class="lead">Fleetline plots each vehicle's cost per mile against its age. Drag the slider to see how keeping a vehicle one more year changes the cost, and where the best replacement point sits.</p>
+      </div>
+      <div class="win" style="padding:18px 18px 22px">
+        <div class="readout"><div><b id="r-year">Year 5</b><span>If you keep it this long</span></div><div><b id="r-cost">$0.63</b><span>Cost per mile</span></div><div><b id="r-opt" style="color:var(--teal)">Year 7</b><span>Lowest cost point</span></div></div>
+        <svg class="chart" id="curve"></svg>
+        <div class="slider-row"><label for="yr">Keep for</label><input id="yr" type="range" min="1" max="10" step="1" value="5"><span id="yr-out" style="font-weight:700;min-width:62px;text-align:right">5 years</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAMS -->
+<section class="alt">
+  <div class="wrap">
+    <div class="head"><h2>Built for the people who actually use the vehicles.</h2></div>
+    <div class="teams">
+      <div class="team"><h3>Technicians</h3><p>See the work order, the part list and the vehicle's history on a phone at the bench. Add photos of worn tires or brakes right from the shop floor.</p></div>
+      <div class="team"><h3>Drivers</h3><p>Complete a pre-trip inspection in a minute, flag a defect and get on the road. Managers see the report as soon as it's submitted.</p></div>
+      <div class="team"><h3>Managers</h3><p>Approve repair costs, track fuel spend and plan replacements without calling around or chasing spreadsheets.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="start">
+  <div class="wrap">
+    <h2>Try Fleetline for free.</h2>
+    <p class="lead">Add your first vehicles in a few minutes. No credit card needed.</p>
+    <div class="signup">
+      <input id="email" type="email" placeholder="Work email" aria-label="Work email" autocomplete="email">
+      <button class="btn" id="signup-btn" type="button">Start free trial</button>
+    </div>
+    <div class="msg" id="signup-msg" role="status"></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><span>© 2026 Fleetline. Demo site with sample data.</span><span>Vehicle maintenance, inspections, fuel and cost tracking.</span></div></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg';
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+function h(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function text(parent,x,y,s,anchor,cls){const t=h('text',{x:x,y:y,class:cls||'ax','text-anchor':anchor||'middle'},parent);t.textContent=s;return t}
+function fmt(v){return v>=1000?(+(v/1000).toFixed(1))+'k':String(Math.round(v*100)/100)}
+function nice(x){const raw=x/4,m=Math.pow(10,Math.floor(Math.log10(raw)));const st=[1,2,2.5,5,10].map(k=>k*m).find(v=>v>=raw);return st*4}
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* ---------- van drawing ---------- */
+function van(spin){
+  const wheel=cx=>`<circle cx="${cx}" cy="106" r="27" fill="var(--van-line)" opacity=".55"/><circle cx="${cx}" cy="106" r="21" fill="#2B2F36"/><g class="${spin?'spin':''}"><circle cx="${cx}" cy="106" r="9" fill="#B5BCC6"/><path d="M${cx-9} 106h18M${cx} 97v18" stroke="#6C7480" stroke-width="2"/></g>`;
+  return `<ellipse cx="155" cy="130" rx="150" ry="5" fill="#000" opacity=".12"/>
+  <rect x="12" y="18" width="206" height="86" rx="9" fill="var(--van)" stroke="var(--van-line)" stroke-width="1.5"/>
+  <path d="M216 34H252Q262 34 268 44L291 76Q297 84 297 92V104H216Z" fill="var(--van)" stroke="var(--van-line)" stroke-width="1.5"/>
+  <path d="M224 42H250Q255 42 259 48L276 74H224Z" fill="var(--glass)"/>
+  <path d="M12 86H297V104H12Z" fill="var(--van-shade)"/>
+  <path d="M120 22V86" stroke="var(--van-line)" stroke-width="1.5"/>
+  <rect x="289" y="92" width="11" height="12" rx="3" fill="#4B515B"/><circle cx="292" cy="80" r="3.2" fill="var(--yellow)"/>
+  <rect x="258" y="62" width="9" height="3" rx="1.5" fill="var(--van-line)"/>
+  ${wheel(70)}${wheel(238)}`;
+}
+function vanSVG(spin,extra){return `<svg viewBox="0 0 310 140" ${extra||''} aria-hidden="true">${van(spin)}</svg>`}
+
+/* ---------- hero scene ---------- */
+(function(){
+  const s=$('#scene');
+  s.innerHTML=`<svg viewBox="0 0 1200 380" preserveAspectRatio="xMidYMax slice" role="presentation">
+   <rect width="1200" height="380" fill="var(--sky)"/>
+   <polygon points="0,230 150,120 290,215 420,140 560,225 0,225" fill="var(--mount)" opacity=".7"/>
+   <polygon points="640,230 800,115 940,210 1060,135 1200,200 1200,230" fill="var(--mount)" opacity=".7"/>
+   <ellipse cx="260" cy="300" rx="420" ry="110" fill="var(--hill1)"/>
+   <ellipse cx="900" cy="310" rx="520" ry="120" fill="var(--hill2)"/>
+   <ellipse cx="620" cy="330" rx="380" ry="90" fill="var(--hill1)"/>
+   ${[[110,232],[190,246],[1040,238],[1110,250],[940,258]].map(t=>`<g><rect x="${t[0]-3}" y="${t[1]}" width="6" height="22" fill="#6b4f3a"/><circle cx="${t[0]}" cy="${t[1]-6}" r="17" fill="var(--hill2)" stroke="var(--hill1)" stroke-width="2"/></g>`).join('')}
+   <rect y="318" width="1200" height="62" fill="var(--road)"/>
+   <line x1="0" y1="352" x2="1200" y2="352" stroke="#fff" stroke-width="4" stroke-dasharray="40 30" class="dash-line" opacity=".85"/>
+   <g transform="translate(470,196) scale(1.05)"><g class="bob">${van(true)}</g></g>
+  </svg>`;
+})();
+
+/* ---------- vehicle types ---------- */
+(function(){
+  const base='fill="var(--van)" stroke="var(--van-line)" stroke-width="2"';
+  const w=(cx)=>`<circle cx="${cx}" cy="82" r="11" fill="#2B2F36"/><circle cx="${cx}" cy="82" r="4" fill="#B5BCC6"/>`;
+  const items=[
+   ['Vans',`<svg viewBox="0 0 220 100"><rect x="8" y="14" width="140" height="62" rx="7" ${base}/><path d="M146 26H176Q184 26 189 34L208 58V76H146Z" ${base}/><path d="M152 32H174Q178 32 181 37L192 54H152Z" fill="var(--glass)"/>${w(48)}${w(170)}</svg>`],
+   ['Pickups',`<svg viewBox="0 0 220 100"><path d="M8 40H88V76H8Z" ${base}/><path d="M88 22H128Q136 22 141 30L158 40H208V76H88Z" ${base}/><path d="M96 28H126Q130 28 133 33L142 40H96Z" fill="var(--glass)"/>${w(44)}${w(160)}</svg>`],
+   ['Box trucks',`<svg viewBox="0 0 220 100"><rect x="6" y="8" width="136" height="68" rx="5" ${base}/><path d="M146 28H176Q184 28 189 36L210 58V76H146Z" ${base}/><path d="M152 34H174Q178 34 181 39L192 56H152Z" fill="var(--glass)"/>${w(40)}${w(170)}${w(104)}</svg>`],
+   ['Buses',`<svg viewBox="0 0 220 100"><rect x="6" y="12" width="208" height="64" rx="14" ${base}/>${[18,52,86,120,154].map(x=>`<rect x="${x}" y="22" width="26" height="20" rx="3" fill="var(--glass)"/>`).join('')}<rect x="186" y="22" width="20" height="30" rx="3" fill="var(--glass)"/>${w(50)}${w(160)}</svg>`]
+  ];
+  $('#types').innerHTML=items.map(i=>`<div class="type">${i[1]}${i[0]}</div>`).join('');
+})();
+
+/* ---------- chart helpers ---------- */
+function gridFrame(svg,W,H,p,max,ticks){
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.innerHTML='';
+  for(let i=0;i<=ticks;i++){const y=p.t+(H-p.t-p.b)*(1-i/ticks);h('line',{x1:p.l,x2:W-p.r,y1:y,y2:y,class:'grid-l'},svg);text(svg,p.l-6,y+3,fmt(max*i/ticks),'end')}
+}
+function bars(svg,labels,vals,cls){
+  const W=300,H=170,p={l:36,r:6,t:8,b:22},max=nice(Math.max.apply(null,vals));
+  gridFrame(svg,W,H,p,max,4);
+  const bw=(W-p.l-p.r)/vals.length;
+  vals.forEach((v,i)=>{const bh=(H-p.t-p.b)*v/max;h('rect',{x:p.l+i*bw+bw*.2,y:H-p.b-bh,width:bw*.6,height:bh,rx:2,class:cls},svg);text(svg,p.l+i*bw+bw/2,H-7,labels[i])});
+}
+function lines(svg,labels,series,W,H,max){
+  const p={l:40,r:10,t:10,b:22};
+  gridFrame(svg,W,H,p,max,4);
+  const step=(W-p.l-p.r)/(labels.length-1);
+  labels.forEach((l,i)=>text(svg,p.l+i*step,H-7,l));
+  series.forEach(s=>{
+    const pts=s.vals.map((v,i)=>[p.l+i*step,H-p.b-(H-p.t-p.b)*v/max]);
+    h('path',{d:pts.map((q,i)=>(i?'L':'M')+q[0]+' '+q[1]).join(''),class:s.cls},svg);
+    pts.forEach(q=>h('circle',{cx:q[0],cy:q[1],r:3,fill:s.dot},svg));
+  });
+}
+function prng(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+function scatter(svg,seed,f){
+  const W=520,H=230,p={l:44,r:10,t:10,b:30};
+  gridFrame(svg,W,H,p,600000,6);
+  ['Jan','Feb','Mar','Apr','May'].forEach((m,i)=>text(svg,p.l+(i+.5)*(W-p.l-p.r)/5,H-8,m));
+  const r=prng(seed),n=Math.round(22*f)+6,cols=['var(--teal)','var(--yellow)','var(--purple)'];
+  for(let i=0;i<n;i++){
+    const x=p.l+10+r()*(W-p.l-p.r-20),y=p.t+8+r()*(H-p.t-p.b-16),k=Math.floor(r()*3);
+    if(k===0)h('circle',{cx:x,cy:y,r:4,fill:cols[0]},svg);
+    else if(k===1)h('path',{d:`M${x} ${y-5}L${x+5} ${y}L${x} ${y+5}L${x-5} ${y}Z`,fill:cols[1]},svg);
+    else h('rect',{x:x-4,y:y-4,width:8,height:8,fill:cols[2]},svg);
+  }
+}
+function pie(svg,vals,cols,R,inner){
+  svg.setAttribute('viewBox','-100 -100 200 200');svg.innerHTML='';
+  const tot=vals.reduce((a,b)=>a+b,0);let a0=-Math.PI/2;
+  vals.forEach((v,i)=>{
+    const a1=a0+v/tot*Math.PI*2,large=(a1-a0)>Math.PI?1:0;
+    const x0=R*Math.cos(a0),y0=R*Math.sin(a0),x1=R*Math.cos(a1),y1=R*Math.sin(a1);
+    let d;
+    if(inner){const ix0=inner*Math.cos(a0),iy0=inner*Math.sin(a0),ix1=inner*Math.cos(a1),iy1=inner*Math.sin(a1);
+      d=`M${x0} ${y0}A${R} ${R} 0 ${large} 1 ${x1} ${y1}L${ix1} ${iy1}A${inner} ${inner} 0 ${large} 0 ${ix0} ${iy0}Z`}
+    else d=`M0 0L${x0} ${y0}A${R} ${R} 0 ${large} 1 ${x1} ${y1}Z`;
+    h('path',{d:d,fill:cols[i],stroke:'var(--surface)','stroke-width':2},svg);a0=a1;
+  });
+}
+
+/* ---------- dashboard ---------- */
+const months=['Dec','Jan','Feb','Mar','Apr','May'];
+const G={
+  all:{f:1,pass:82,seed:42},
+  delivery:{f:.62,pass:91,seed:7},
+  field:{f:.38,pass:74,seed:19}
+};
+function sc(a,f){return a.map(v=>Math.round(v*f))}
+function renderDash(k){
+  const g=G[k],f=g.f;
+  const set=(id,v)=>{$('#'+id).textContent=v};
+  sc([17,8,11],f).forEach((v,i)=>set('wo'+i,v));
+  sc([131,3,8,11],f).forEach((v,i)=>set('vs'+i,v));
+  set('asg',Math.round(35*f));set('uasg',Math.max(1,Math.round(6*f)));
+  set('oi',Math.round(53*f));set('ov',Math.max(1,Math.round(8*f)));
+  bars($('#tc'),months,sc([3400,2700,1200,5600,10200,4900],f),'f-blue');
+  bars($('#fc'),months,sc([1550,420,190,780,520,610],f),'f-green');
+  const cpm=(m)=>[[780,520,330,620,460,720],[610,640,260,540,420,520],[300,260,190,310,240,280]].map(a=>a.map(v=>v*m));
+  const m=k==='all'?1:(k==='delivery'?.85:1.15);const c=cpm(m);
+  lines($('#cpm'),months,[
+    {vals:c[0],cls:'s-teal',dot:'var(--teal)'},{vals:c[1],cls:'s-yellow',dot:'var(--yellow)'},{vals:c[2],cls:'s-gray',dot:'#9aa4b2'}],300,150,1000);
+  scatter($('#scatter'),g.seed,f);
+  pie($('#pie'),[g.pass,100-g.pass],['var(--green)','var(--red)'],92,0);
+  $('#pie-l').textContent='Last 30 days · '+g.pass+'% passed';
+}
+$('#group').addEventListener('change',e=>renderDash(e.target.value));
+renderDash('all');
+
+/* ---------- alerts + issue list ---------- */
+const alertText={
+  recall:'<b>Recall found.</b> The manufacturer issued a recall for the rear brake line on 6 vans in your fleet. Create a work order for each one from the issue list.',
+  dvir:'<b>Driver reported a defect.</b> Front-left tire is low after the morning inspection. The report arrives with the driver’s photo and odometer reading.',
+  dtc:'<b>Engine fault code.</b> Code P0420 reported on Truck 14. Check the catalytic converter before the next long trip.'
+};
+$$('.alert').forEach(b=>b.addEventListener('click',()=>{
+  $$('.alert').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');
+  $('#alert-note').innerHTML=alertText[b.dataset.k];
+}));
+$('#alert-note').innerHTML=alertText.recall;
+const issues=[
+  ['Transit Van','Nail in front tire','Reported May 22 · 144,987 mi','Dana R.'],
+  ['F-250','Steering wheel is pulling','Reported May 21 · 98,410 mi','Marcus T.'],
+  ['Sprinter Van','Car graphics are peeling','Reported May 20 · 61,200 mi','Unassigned'],
+  ['Ram Cab','Oil change due','Reported May 19 · 120,044 mi','Priya N.'],
+  ['Box Truck 14','Cracked brake rotor','Reported May 18 · 211,309 mi','Dana R.']
+];
+(function(){
+  const box=$('#issue-list');
+  box.innerHTML=issues.map((r,i)=>`<button class="list-row" aria-pressed="${i===0}" data-i="${i}"><span><b>${r[0]}</b></span><span>${r[1]}<small>${r[2]}</small></span><span>${r[3]}</span></button>`).join('');
+  box.addEventListener('click',e=>{const b=e.target.closest('.list-row');if(!b)return;$$('.list-row',box).forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true')});
+})();
+
+/* ---------- work order ---------- */
+$('#wo-save').addEventListener('click',()=>{
+  const v=$('#f-veh').value.trim(),d=$('#f-desc').value.trim();
+  if(!v||!d){toast('Add a vehicle and an issue description first.');return}
+  const b=$('#wo-save');b.textContent='Saved';setTimeout(()=>b.textContent='Save Work Order',1600);
+  toast('Work order saved for '+v);
+});
+$('#wo-cancel').addEventListener('click',()=>{$('#f-veh').value='';$('#f-desc').value='';$('#f-cdate').value='';toast('Work order cleared')});
+function decide(approve){
+  const a=$('#app'),r=$('#rej'),t=$('#auth');
+  a.setAttribute('aria-pressed',approve);r.setAttribute('aria-pressed',!approve);
+  t.textContent=approve?'Approved':'Rejected';
+  t.style.background=approve?'color-mix(in srgb,var(--green) 25%,var(--surface))':'color-mix(in srgb,var(--red) 25%,var(--surface))';
+  toast(approve?'Line item approved':'Line item rejected');
+}
+$('#app').addEventListener('click',()=>decide(true));
+$('#rej').addEventListener('click',()=>decide(false));
+
+/* ---------- costs ---------- */
+pie($('#donut'),[3.1,29.6,67.3],['var(--green)','#8a97a6','var(--yellow)'],92,52);
+lines($('#cost-line'),['Jan','Feb','Mar','Apr','May','Jun'],[{vals:[23,28,17,22,16,11],cls:'s-teal',dot:'var(--teal)'}],520,220,40);
+
+/* ---------- replacement curve ---------- */
+(function(){
+  const A=2.744,B=.004,cost=y=>A/y+B*y*y;
+  const W=600,H=270,p={l:50,r:16,t:16,b:34},ymax=1.5;
+  const X=y=>p.l+(y-1)/9*(W-p.l-p.r),Y=c=>H-p.b-(H-p.t-p.b)*Math.min(c,ymax)/ymax;
+  const svg=$('#curve');
+  function draw(yr){
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.innerHTML='';
+    for(let i=0;i<=3;i++){const v=ymax*i/3,y=Y(v);h('line',{x1:p.l,x2:W-p.r,y1:y,y2:y,class:'grid-l'},svg);text(svg,p.l-8,y+3,'$'+v.toFixed(2),'end')}
+    for(let y=1;y<=10;y++)text(svg,X(y),H-12,y);
+    text(svg,(W+p.l)/2,H-0,'Years in service','middle');
+    let d='',area='';
+    for(let y=1;y<=10.001;y+=.1){const c=cost(y);if(c>ymax&&y<2)continue;d+=(d?'L':'M')+X(y)+' '+Y(c)}
+    h('path',{d:d+'L'+X(10)+' '+(H-p.b)+'L'+X(1.8)+' '+(H-p.b)+'Z',class:'curve-area'},svg);
+    h('path',{d:d,class:'curve-line'},svg);
+    h('line',{x1:X(7),x2:X(7),y1:p.t,y2:H-p.b,stroke:'var(--red)','stroke-width':2,'stroke-dasharray':'5 4'},svg);
+    text(svg,X(7)+6,p.t+10,'Best: year 7','start');svg.lastChild.setAttribute('fill','var(--red)');svg.lastChild.style.fontWeight='700';svg.lastChild.style.fontSize='12px';
+    const cy=Y(cost(yr));
+    h('line',{x1:X(yr),x2:X(yr),y1:cy,y2:H-p.b,stroke:'var(--blue)','stroke-width':1.5},svg);
+    h('circle',{cx:X(yr),cy:cy,r:7,fill:'var(--blue)',stroke:'var(--surface)','stroke-width':2},svg);
+  }
+  const s=$('#yr');
+  function upd(){const y=+s.value;draw(y);$('#yr-out').textContent=y+(y===1?' year':' years');$('#r-year').textContent='Year '+y;$('#r-cost').textContent='$'+cost(y).toFixed(2);
+    $('#r-cost').style.color=y===7?'var(--teal)':'';}
+  s.addEventListener('input',upd);upd();
+})();
+
+/* ---------- sign up ---------- */
+$('#signup-btn').addEventListener('click',()=>{
+  const v=$('#email').value.trim(),m=$('#signup-msg');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){m.textContent='Enter a valid work email, like name@company.com.';m.style.color='var(--red)';return}
+  m.textContent='Thanks. We’ll send setup steps to '+v+'.';m.style.color='var(--green)';
+});
+$('#email').addEventListener('keydown',e=>{if(e.key==='Enter')$('#signup-btn').click()});
+})();
+</script>
+</body>
+</html>
